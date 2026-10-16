@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#07142f">
+<title>Inscribir jugadores · Deportivasa</title>
+<link rel="icon" href="../assets/escudo-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/base.css">
+<style>
+  body { min-height: 100vh; background: radial-gradient(120% 55% at 50% -10%, rgba(79,125,255,.2), transparent 60%), var(--noche); }
+  main { max-width: 460px; margin: 0 auto; padding: 28px 16px 48px; }
+  .escudo { width: 92px; margin: 0 auto 10px; filter: drop-shadow(0 10px 24px rgba(79,125,255,.35)); }
+  .equipo { text-align: center; margin-bottom: 22px; }
+  .equipo small { display: block; color: var(--tiza-2); }
+  .equipo h1 { font-size: 2.6rem; font-style: italic; text-transform: uppercase; margin: 2px 0 6px; }
+  .contador { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--cancha-2); color: var(--tiza-2); font-size: .9rem; }
+  form { background: var(--cancha); border-radius: var(--r-grande); padding: 20px 18px; box-shadow: inset 0 0 0 1px var(--linea); }
+  .nota { color: var(--tiza-3); font-size: .85rem; margin: 4px 0 16px; }
+  .resultado { margin-top: 16px; padding: 14px 16px; border-radius: var(--r-medio); font-weight: 500; }
+  .resultado.ok { background: rgba(47,191,113,.16); color: #a6f0c6; }
+  .resultado.error { background: rgba(239,75,85,.16); color: #ffc2c6; }
+  .estado { text-align: center; padding: 30px 10px; color: var(--tiza-2); }
+  .estado b { display: block; font-family: var(--f-titulo); font-size: 1.7rem; color: var(--tiza); margin-bottom: 6px; }
+  footer { text-align: center; color: var(--tiza-3); font-size: .8rem; margin-top: 26px; }
+</style>
+</head>
+<body>
+<main>
+  <img class="escudo" src="../assets/escudo-192.png" alt="Escudo de Deportivasa">
+  <div id="contenido"><div class="estado">Cargando…</div></div>
+  <footer>Torneos Deportivasa · Los datos solo los ve la organización.</footer>
+</main>
+<script src="../assets/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(() => {
+  const CFG = window.DEPORTIVASA;
+  const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, { auth: { persistSession: false } });
+  const $c = document.getElementById('contenido');
+  const codigo = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase();
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const MENSAJES = {
+    ok: null,
+    codigo_invalido: 'El link no es válido. Pedile a la organización el link de tu equipo.',
+    inscripcion_cerrada: 'La inscripción de jugadores está cerrada en este momento.',
+    datos_incompletos: 'Completá nombre y apellido.',
+    dni_invalido: 'El DNI tiene que tener 7 u 8 números, sin puntos.',
+    nacimiento_invalido: 'Revisá la fecha de nacimiento.',
+    dni_ya_inscripto: 'Ese DNI ya está inscripto en el torneo.',
+    dni_ya_pendiente: 'Ese jugador ya fue enviado y está esperando aprobación.',
+    cupo_completo: 'El equipo ya llegó al cupo de jugadores (contando los que esperan aprobación).'
+  };
+
+  function estado(titulo, texto) { $c.innerHTML = `<div class="estado"><b>${esc(titulo)}</b>${esc(texto)}</div>`; }
+
+  async function cargar() {
+    if (!codigo) return estado('Falta el código del equipo', 'Abrí el link que te pasó la organización.');
+    const { data, error } = await sb.rpc('equipo_por_codigo', { p_codigo: codigo });
+    if (error) return estado('No se pudo cargar', 'Revisá tu conexión y volvé a abrir el link.');
+    const eq = data && data[0];
+    if (!eq) return estado('Link no válido', MENSAJES.codigo_invalido);
+    if (!eq.inscripcion_abierta) return estado(eq.equipo, MENSAJES.inscripcion_cerrada);
+    pintar(eq);
+  }
+
+  function pintar(eq, mensaje, tipo) {
+    const ocupados = eq.inscriptos + eq.pendientes;
+    $c.innerHTML = `
+      <div class="equipo"><small>${esc(eq.torneo)}</small><h1>${esc(eq.equipo)}</h1>
+        <span class="contador">${eq.inscriptos} inscriptos${eq.pendientes ? ` · ${eq.pendientes} esperando aprobación` : ''} · cupo ${eq.cupo}</span></div>
+      <form id="f" novalidate>
+        <label class="campo"><span>Nombre</span><input class="input" name="nombre" autocomplete="off" required></label>
+        <label class="campo"><span>Apellido</span><input class="input" name="apellido" autocomplete="off" required></label>
+        <label class="campo"><span>DNI</span><input class="input" name="dni" inputmode="numeric" placeholder="Solo números" autocomplete="off" required></label>
+        <label class="campo"><span>Fecha de nacimiento (opcional)</span><input class="input" name="nacimiento" type="date"></label>
+        <p class="nota">La organización revisa cada jugador antes de sumarlo al plantel.</p>
+        <button class="btn btn-bloque" type="submit" ${ocupados >= eq.cupo ? 'disabled' : ''}>Enviar jugador</button>
+        ${mensaje ? `<div class="resultado ${tipo}">${esc(mensaje)}</div>` : ''}
+      </form>`;
+    const f = document.getElementById('f');
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const d = new FormData(f); const b = f.querySelector('button'); b.disabled = true;
+      const { data, error } = await sb.rpc('enviar_solicitud', {
+        p_codigo: codigo, p_nombre: d.get('nombre'), p_apellido: d.get('apellido'), p_dni: d.get('dni'), p_nacimiento: d.get('nacimiento') || null
+      });
+      if (error) { b.disabled = false; return pintarMensaje(eq, 'No se pudo enviar. Revisá tu conexión y probá de nuevo.', 'error', d); }
+      if (data === 'ok') {
+        const nombre = `${d.get('nombre')} ${d.get('apellido')}`.trim();
+        const r = await sb.rpc('equipo_por_codigo', { p_codigo: codigo });
+        return pintar((r.data && r.data[0]) || eq, `Listo: ${nombre} quedó enviado. Podés cargar otro jugador.`, 'ok');
+      }
+      b.disabled = false;
+      pintarMensaje(eq, MENSAJES[data] || 'No se pudo enviar.', 'error', d);
+    });
+  }
+  function pintarMensaje(eq, msj, tipo, datos) {
+    pintar(eq, msj, tipo);
+    const f = document.getElementById('f');
+    for (const [k, v] of datos.entries()) if (f.elements[k]) f.elements[k].value = v;
+  }
+  cargar();
+})();
+</script>
+</body>
+</html>

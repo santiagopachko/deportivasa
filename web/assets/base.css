@@ -1,0 +1,101 @@
+/* Deportivasa – tokens y base compartida (web pública, organizadores, delegados) */
+:root {
+  /* Paleta tomada del escudo */
+  --noche: #07142f;        /* fondo: cancha de noche */
+  --cancha: #0c1f4a;       /* superficies */
+  --cancha-2: #13295e;     /* superficies elevadas */
+  --escudo: #1d3a94;       /* azul del escudo */
+  --brillo: #4f7dff;       /* reflejo eléctrico: botones y foco */
+  --tiza: #f2f5fb;         /* blanco del escudo / líneas de cancha */
+  --tiza-2: #b8c4de;       /* texto secundario */
+  --tiza-3: #7d8db3;       /* texto terciario */
+  --linea: rgba(242, 245, 251, .12);
+  --verde: #2fbf71;        /* en proceso / aprobado */
+  --rojo: #ef4b55;         /* rechazado / roja / inscripciones abiertas */
+  --amarilla: #f6c945;     /* tarjeta amarilla */
+  --oro: #d9b25f;
+  --plata: #c3cad6;
+
+  --f-titulo: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-texto: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --r-chico: 8px;
+  --r-medio: 14px;
+  --r-grande: 22px;
+  --sombra: 0 10px 30px rgba(0, 5, 20, .45);
+  --t: 160ms cubic-bezier(.2, .7, .2, 1);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--noche);
+  color: var(--tiza);
+  font-family: var(--f-texto);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: var(--brillo); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brillo); outline-offset: 2px; }
+
+h1, h2, h3 {
+  font-family: var(--f-titulo);
+  font-weight: 700;
+  line-height: 1.02;
+  margin: 0;
+  letter-spacing: .01em;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 48px; padding: 0 1.2em;
+  border: 0; border-radius: var(--r-medio);
+  background: var(--brillo); color: #fff;
+  font-family: var(--f-titulo); font-weight: 700; font-size: 1.15rem; letter-spacing: .02em;
+  text-decoration: none; cursor: pointer;
+  transition: transform var(--t), background var(--t), opacity var(--t);
+}
+.btn:active { transform: scale(.97); }
+.btn[disabled] { opacity: .45; cursor: default; }
+.btn-claro { background: var(--tiza); color: var(--escudo); }
+.btn-fantasma { background: transparent; color: var(--tiza); box-shadow: inset 0 0 0 1.5px var(--linea); }
+.btn-verde { background: var(--verde); }
+.btn-rojo { background: var(--rojo); }
+.btn-chico { min-height: 38px; font-size: 1rem; padding: 0 .9em; border-radius: var(--r-chico); }
+.btn-bloque { display: flex; width: 100%; }
+
+/* Campos */
+.campo { display: grid; gap: 6px; margin-bottom: 14px; }
+.campo > span { font-size: .9rem; color: var(--tiza-2); }
+.input {
+  width: 100%; min-height: 48px; padding: 0 14px;
+  background: var(--noche); border: 1.5px solid var(--linea); border-radius: var(--r-medio);
+  color: var(--tiza); font-size: 1rem;
+  transition: border-color var(--t);
+}
+.input:focus { border-color: var(--brillo); outline: none; }
+select.input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--tiza-2) 50%), linear-gradient(135deg, var(--tiza-2) 50%, transparent 50%); background-position: calc(100% - 20px) 21px, calc(100% - 15px) 21px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+.input::placeholder { color: var(--tiza-3); }
+
+/* Carteles de estado */
+.cartel {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: 999px;
+  font-family: var(--f-titulo); font-weight: 700; font-size: .85rem; letter-spacing: .04em;
+  background: rgba(242,245,251,.1); color: var(--tiza);
+}
+.cartel::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.cartel.verde { background: rgba(47,191,113,.16); color: #6fe3a3; }
+.cartel.rojo { background: rgba(239,75,85,.18); color: #ff8a92; }
+.cartel.gris { color: var(--tiza-2); }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
