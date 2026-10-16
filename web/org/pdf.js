@@ -7,7 +7,7 @@
   async function cargarEscudo() {
     if (escudo) return escudo;
     try {
-      const r = await fetch('/assets/escudo-192.png');
+      const r = await fetch('../assets/escudo-192.png');
       const b = await r.blob();
       escudo = await new Promise((ok) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(b); });
     } catch { escudo = null; }

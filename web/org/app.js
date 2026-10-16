@@ -30,7 +30,8 @@
   const activos = (equipoId) => estado.jugadores.filter((j) => j.equipo_id === equipoId && j.activo)
     .sort((a, b) => (a.apellido + a.nombre).localeCompare(b.apellido + b.nombre, 'es'));
   const pendientes = () => estado.solicitudes.filter((s) => s.estado === 'pendiente');
-  const linkDelegado = (codigo) => `${location.origin}/inscribir/?c=${encodeURIComponent(codigo)}`;
+  const URL_ORG = new URL('.', location.href.split('#')[0]).href; // funciona en cualquier dirección (GitHub Pages, Cloudflare, dominio propio)
+  const linkDelegado = (codigo) => new URL(`../inscribir/?c=${encodeURIComponent(codigo)}`, URL_ORG).href;
 
   const ERRORES = {
     sin_permiso: 'Tu usuario no tiene permiso para hacer esto.',
@@ -130,7 +131,7 @@
     }
     $app.innerHTML = h`
       <main class="ingreso"><div class="tarjeta">
-        <img src="/assets/escudo-480.png" alt="Escudo de Deportivasa">
+        <img src="../assets/escudo-480.png" alt="Escudo de Deportivasa">
         <h1>${titulos[modo]}</h1>
         <p class="lema">Donde el deporte se vive</p>
         ${form}
@@ -140,7 +141,7 @@
     $app.querySelectorAll('[data-modo]').forEach((b) => b.addEventListener('click', () => pantallaIngreso(b.dataset.modo)));
     const g = $app.querySelector('#google');
     if (g) g.addEventListener('click', async () => {
-      const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/org/' } });
+      const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: URL_ORG } });
       if (error) pantallaIngreso('entrar', textoError(error), 'error');
     });
     const bind = (id, fn) => { const f = $app.querySelector(id); if (f) f.addEventListener('submit', async (e) => {
@@ -153,13 +154,13 @@
     });
     bind('#f-crear', async (d) => {
       const email = String(d.get('email')).trim().toLowerCase();
-      const { error } = await sb.auth.signUp({ email, password: String(d.get('clave')), options: { emailRedirectTo: location.origin + '/org/' } });
+      const { error } = await sb.auth.signUp({ email, password: String(d.get('clave')), options: { emailRedirectTo: URL_ORG } });
       if (error) throw error;
       pantallaIngreso('entrar', `Listo. Te mandamos un mail a ${email} para confirmarlo. Después entrás con tu mail y contraseña.`);
     });
     bind('#f-olvide', async (d) => {
       const email = String(d.get('email')).trim().toLowerCase();
-      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/org/' });
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: URL_ORG });
       if (error) throw error;
       pantallaIngreso('entrar', `Si ${email} tiene cuenta, te llega un mail con el enlace para cambiar la contraseña.`);
     });
@@ -175,7 +176,7 @@
   function pantallaSinAcceso(email) {
     $app.innerHTML = h`
       <main class="ingreso"><div class="tarjeta">
-        <img src="/assets/escudo-480.png" alt="Escudo de Deportivasa">
+        <img src="../assets/escudo-480.png" alt="Escudo de Deportivasa">
         <h1>Sin acceso</h1>
         <p class="lema">${esc(email)} no figura como organizador de Deportivasa.</p>
         <button class="btn btn-fantasma btn-bloque" id="salir">Entrar con otra cuenta</button>
@@ -235,7 +236,7 @@
     const ini = (estado.organizador?.nombre || '?').split(' ').map((p) => p[0]).slice(0, 2).join('');
     return h`
       <header class="barra">
-        <img src="/assets/escudo-64.png" alt="">
+        <img src="../assets/escudo-64.png" alt="">
         <div class="torneo-sel">
           <label class="sr" for="sel-torneo">Torneo</label>
           <select id="sel-torneo">${estado.torneos.map((x) => `<option value="${x.id}" ${x.id === estado.torneoId ? 'selected' : ''}>${esc(x.nombre)} · ${esc(x.sede?.nombre || '')}${x.visible ? '' : ' (oculto)'}</option>`).join('')}</select>
@@ -460,7 +461,7 @@
 
         <div class="fila" style="margin-top:18px">
           <input class="input crece" id="buscar" type="search" placeholder="Buscar por nombre o DNI" value="${esc(estado.busqueda)}" aria-label="Buscar jugador">
-          <button class="btn" id="agregar" ${lista.length >= cupo ? 'disabled' : ''}>Agregar jugador</button>
+          <button class="btn" id="agregar" ${lista.length >= cupo ? 'disabled' : ''}>+ Agregar</button>
         </div>
         <ul class="lista caja" style="padding:0 12px;margin-top:10px">${filtrada.map((j, i) => h`
           <li><span class="num">${lista.indexOf(j) + 1}</span>
