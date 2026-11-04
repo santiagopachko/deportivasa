@@ -1,0 +1,18 @@
+# Latido diario: una consulta liviana a la base de Deportivasa para que el plan
+# gratis de Supabase no la ponga en pausa por falta de uso.
+name: Latido Supabase
+on:
+  schedule:
+    - cron: "17 12 * * *"   # todos los días, 09:17 hora de Buenos Aires
+  workflow_dispatch: {}
+jobs:
+  latido:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar la base
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://nahlizxwlxudfvnsxsrn.supabase.co/rest/v1/torneos?select=slug&limit=1" \
+            -H "apikey: sb_publishable_Wt3LNpL2Ny82jwAEwCyl8A_G91edsCz")
+          echo "Respuesta: $code"
+          test "$code" = "200"
