@@ -47,6 +47,7 @@
     const m = (e && (e.message || e.error_description || e.msg)) || String(e);
     const clave = Object.keys(ERRORES).find((k) => m.includes(k));
     if (clave) return ERRORES[clave];
+    if (/Database error saving new user|no está habilitado/i.test(m)) return 'Ese mail no está habilitado como organizador de Deportivasa.';
     if (/Invalid login credentials/i.test(m)) return 'Mail o contraseña incorrectos.';
     if (/Email not confirmed/i.test(m)) return 'Todavía no confirmaste tu mail. Revisá tu casilla (y el spam).';
     if (/User already registered/i.test(m)) return 'Ese mail ya tiene contraseña. Usá "Olvidé mi contraseña" si no la recordás.';
