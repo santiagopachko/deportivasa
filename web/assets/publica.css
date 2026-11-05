@@ -253,3 +253,8 @@ table.tabla { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   .copas { grid-template-columns: repeat(2, minmax(0, 220px)); justify-content: start; }
 }
 @media (prefers-reduced-motion: reduce) { .cinta .pista { animation: none; } .cartel.latido { animation: none; } }
+
+.tope-acciones { display: flex; align-items: center; gap: 8px; flex: none; }
+.tope-org { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--cancha-2); color: var(--tiza); box-shadow: inset 0 0 0 1px var(--linea); }
+.tope-org svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.pie a.org { display: inline-block; margin-top: 6px; padding: 10px 18px; border-radius: 999px; background: var(--cancha-2); color: var(--tiza); text-decoration: none; font-weight: 600; }
